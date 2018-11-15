@@ -7,9 +7,14 @@
   <title>Book List</title>
   <link rel='Stylesheet' href="style.css"/>
 </head>
-<body class='list-page'>
+<body class='book-form'>
+  
+    <p1>This is a paragraph</p1>
 
-  <h1>Book List Page</h1>
-  <h2>This is a samaller header</h2>
+    <form method='POST' action='/book/add'>
+      <input placeholder='title' name='title'/>
+      <input placeholder='author' name='author'/>
+      <button type='submit'>save</button>
+    </form>
 </body>
 </html>
