@@ -4,16 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Book List</title>
+  <title>Book Edit</title>
   <link rel='Stylesheet' href="/style.css"/>
 </head>
 <body class='book-form'>
   
     <p1>This is a paragraph</p1>
 
-    <form method='POST' action='/book/add'>
-      <input placeholder='title' name='title'/>
-      <input placeholder='author' name='author'/>
+    <form method='POST' action='/book/edit/{{books.bookId}}'>
+      <input placeholder='title' name='title' value='{{books.title}}'/>
+      <input placeholder='author' name='author' value='{{books.author}}'/>
       <button type='submit'>save</button>
     </form>
 </body>

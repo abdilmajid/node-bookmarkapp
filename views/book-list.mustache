@@ -5,18 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Book List</title>
-  <link rel='Stylesheet' href="style.css"/>
+  <link rel='Stylesheet' href="/style.css"/>
 </head>
 <body class='list-page'>
 
   <h1>Book List Page</h1>
-  <h2>This is a samaller header</h2>
+
 
 
 {{#books}}
 <table>
     <tr>
-      <td>{{title}} by: {{author}}</td>      
+      <td>{{book_id}} |</td>
+      <td>{{title}} |</td>
+      <td>{{author}}</td>
+      <td><a href='/book/edit/{{bookId}}'>edit</a></td>
+      <td>
+        <form method='POST' action='/book/delete/{{bookId}}'>
+        <button type='submit'>delete</button>
+        </form>
+      </td>
     </tr>
 <table>  
 {{/books}}

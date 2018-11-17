@@ -4,8 +4,12 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const pg = require('pg');
 
+// pgCamelCase removes the (id) from appearing on browser
+const pgCamelCase = require('pg-camelcase');
+pgCamelCase.inject(require('pg'));
 
-const path = require('path');
+
+// const path = require('path');
 
 const app = express();
 // Database string
@@ -35,18 +39,20 @@ app.use(cors());
 
 //Where we put the booklist
 app.get('/books', (req, res) => {
-  pool.connect((err, client, done) => {
-    if(err) {
-      console.log('error fetching client from pool', err);
-    }
-    client.query('SELECT * FROM books', (err, result) => {
-      done();
-      if(err) {
-        console.log('error running query', err);
-      }
-      res.render('book-list', {books: result.rows});
+// Show Database Items on the browser
+  pool.connect() // connects to Postgres, then do stuff
+    .then(() => {
+      return pool.query('SELECT * FROM books')
     })
-  })
+    .then((results) => {
+      // console.log('results', results);
+      //{books: results.row} ->allows for only rusults we want to be returned
+      res.render('book-list', {books: results.rows});
+    })
+    .catch((err) => {
+      // console.log('error', err);
+      res.send('Something went wrong');
+    })
 }) 
 
 app.get('/book/add', (req, res) => {
@@ -54,10 +60,13 @@ app.get('/book/add', (req, res) => {
 })
 
 
+// Adding Items to Database
 app.post('/book/add', (req, res) => {
   console.log('works');
   pool.connect()
     .then(() => {
+      // Use paramaters when needing to insert values (here we need
+      // title and author)
       const sql = 'INSERT INTO books (title, author) VALUES ($1, $2)'
       const params = [req.body.title, req.body.author];
       return pool.query(sql, params);
@@ -66,8 +75,68 @@ app.post('/book/add', (req, res) => {
       console.log('result?', result);
       res.redirect('/books');
     })
-
  });
+
+app.post('/book/delete/:id', (req, res) => {
+  // Deleting items from database
+  // console.log('Post Deleted', req.params.id);
+  pool.connect()
+    .then(() => {
+      // Use params b/c need value book_id
+      const sql = 'DELETE FROM books WHERE book_id = $1;'
+      const params = [req.params.id];
+      return pool.query(sql, params);
+    })
+    .then((results) => {
+      console.log('delete results', results);
+      res.redirect('/books');
+    })
+    .catch((err) => {
+      console.log('err', err);
+      res.redirect('/books');
+    })
+})
+
+app.get('/book/edit/:id',(req, res) => {
+  pool.connect()
+    .then(() =>{
+      // res.render('book-edit')
+      // console.log('editpage loaded')
+      const sql = 'SELECT * FROM books WHERE book_id = $1;'
+      const params = [req.params.id];
+      return pool.query(sql, params);
+    })
+    .then((results) => {
+      if(results.rowCount !== 0) {
+        res.render('book-edit', {books: results.rows[0]});
+      } else {
+        res.redirect('/books')
+      }
+    })
+    .catch((err) => {
+      console.log('ERROR!!!!!!', err)
+      res.render('error-page');
+    })
+})
+
+app.post('/book/edit/:id', (req, res) =>{
+  pool.connect()
+    .then(() => {
+      const sql = 'UPDATE books SET title = $1, author = $2 WHERE book_id = $3;'
+      const params = [req.body.title, req.body.author, req.params.id];
+      return pool.query(sql, params);
+    })
+    .then((results) => {
+      console.log('updated results', results)
+      res.redirect('/books')
+    })
+    .catch((err) => {
+      console.log('Something went wrong', err)
+    })
+})
+
+
+
 
 app.listen(process.env.PORT || 5006, () => {
   console.log(`App Running on port ${process.env.PORT}`)
