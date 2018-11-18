@@ -5,6 +5,8 @@ const cors = require('cors');
 const pg = require('pg');
 const path = require('path');
 const multer = require('multer');
+const cons = require('consolidate');
+const ejs = require('ejs');
 
 // pgCamelCase removes the (id) from appearing on browser
 const pgCamelCase = require('pg-camelcase');
@@ -37,47 +39,54 @@ app.use(bodyParser.json());
 app.use(cors());
 
 
-//Set Storage Engine
-const storage = multer.diskStorage({
-  destination: './public/uploads/',
-  // request, file, callback(for errors)
-  filename: (req, file, cb) => {
-    //first param is error, we don't want error so we say null
-    // second is what we call the file(add timestamp to file name b/c don't want 2 files with same name)
-    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
-  }
-})
+// //Set Storage Engine
+// const storage = multer.diskStorage({
+//   destination: './public/uploads/',
+//   // request, file, callback(for errors)
+//   filename: (req, file, cb) => {
+//     //first param is error, we don't want error so we say null
+//     // second is what we call the file(add timestamp to file name b/c don't want 2 files with same name)
+//     cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+//   }
+// })
 
-//Init Upload
-const upload = multer({
-  storage: storage, 
-  limits: {fileSize: 10000000}, //Image size limit }
-  fileFilter: (req, file, cb) => { //types of file that can be uploaded
-      checkFiletype(file, cb)
-  }
-}).single('myImage');
+// //Init Upload
+// const upload = multer({
+//   storage: storage, 
+//   limits: {fileSize: 10000000}, //Image size limit }
+//   fileFilter: (req, file, cb) => { //types of file that can be uploaded
+//       checkFiletype(file, cb)
+//   }
+// }).single('myImage');
 
 
-checkFiletype = (file, cb) => {
-  // allowed file extensions
-  const filetypes = /jpeg|jpg|png|gif|mp4/;
-  // check extenstions
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  // check mime
-  const mimetype = filetypes.test(file.mimetype);
+// checkFiletype = (file, cb) => {
+//   // allowed file extensions
+//   const filetypes = /jpeg|jpg|png|gif|mp4/;
+//   // check extenstions
+//   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+//   // check mime
+//   const mimetype = filetypes.test(file.mimetype);
 
-  if(extname && mimetype) {
-    return cb(null, true);
-  } else {
-    cb('Error: Images Only!')
+//   if(extname && mimetype) {
+//     return cb(null, true);
+//   } else {
+//     cb('Error: Images Only!')
+//   }
+// }
+
+// // Creating GET request, redering template
+// // saying '/' is our index
+// app.get('/', (req, res) => {
+//   return res.render('index')
+// });
+
+messageUndefined = () => {
+  if(typeof msg !== 'undefined'){
+    res.render('index', msg);
   }
 }
 
-// Creating GET request, redering template
-// saying '/' is our index
-app.get('/', (req, res) => {
-  return res.render('index')
-});
 
 //Where we put the booklist
 app.get('/books', (req, res) => {
@@ -87,7 +96,7 @@ app.get('/books', (req, res) => {
       return pool.query('SELECT * FROM books')
     })
     .then((results) => {
-      // console.log('results', results);
+      console.log('results', results);
       //{books: results.row} ->allows for only rusults we want to be returned
       res.render('book-list', {books: results.rows});
     })
